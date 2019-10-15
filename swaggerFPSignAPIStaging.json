@@ -1,0 +1,6459 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "FP Sign REST API",
+    "version": "1.1.0",
+    "title": "FP Sign",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "email": "support@mentana.de"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "app.staging.fp-sign.com",
+  "basePath": "/api/v1_1",
+  "schemes": [
+    "https"
+  ],
+  "securityDefinitions": {
+    "bearerToken": {
+      "type": "http",
+      "scheme": "bearer"
+    }
+  },
+  "paths": {
+    "/login": {
+      "post": {
+        "operationId": "postLogin",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Logs user into the system",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Object containing email address and password",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginIntent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/BearerToken"
+            },
+            "headers": {
+              "X-Rate-Limit": {
+                "type": "integer",
+                "format": "int32",
+                "description": "calls per hour allowed by the user"
+              },
+              "X-Expires-After": {
+                "type": "string",
+                "format": "date-time",
+                "description": "date in UTC when token expires"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid username/password supplied"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "get": {
+        "operationId": "getLogout",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Logs out current logged in user session",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "get": {
+        "operationId": "getAuthRefresh",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Refreshes user session to prevent automatic logout",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/admin/tenants/{tenantId}/signature-servers": {
+      "get": {
+        "operationId": "getSignatureServerIds",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of all SignatureServer IDs.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Primary key of the Tenant entity.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden"
+          }
+        }
+      },
+      "post": {
+        "operationId": "postSignatureServers",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates one or multiple SignatureServer/-s for the given tenant.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Primary key of the Tenant entity.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "signatureServers",
+            "in": "body",
+            "required": true,
+            "description": "Array of SignatureServer entities",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SignatureServer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SignatureServer"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g. missing required property)."
+          },
+          "403": {
+            "description": "forbidden"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putSignatureServers",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates the given SignatureServer entities.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "signatureServers",
+            "in": "body",
+            "required": true,
+            "description": "Array of SignatureServer entities",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SignatureServer"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SignatureServer"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g. missing property)."
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "404": {
+            "description": "One or multiple SignatureServer/-s with the given ID/-s not found for the Tenant."
+          }
+        }
+      }
+    },
+    "/admin/tenants/{tenantId}/signature-servers/{ids}": {
+      "get": {
+        "operationId": "getSignatureServers",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of SignatureServers.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Primary key of the Tenant entity.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "ids",
+            "in": "path",
+            "description": "The ID/-s of the SignatureServer/-s.",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SignatureServer"
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "404": {
+            "description": "One or multiple SignatureServer/-s with the given ID/-s not found for the Tenant."
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteSignatureServers",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Deletes one or multiple SignatureServer/-s of the given tenant.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "ids",
+            "in": "path",
+            "description": "The ID/-s of the SignatureServer/-s.",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "404": {
+            "description": "One or multiple SignatureServer/-s with the given ID/-s not found for the Tenant."
+          },
+          "409": {
+            "description": "Conflict: The signature server cannot be removed for now."
+          }
+        }
+      }
+    },
+    "/admin/tenants/{tenantId}/signature-servers/{id}/connection": {
+      "get": {
+        "operationId": "getSignatureServerConnection",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Checks the availability of the SignatureServer.",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "Primary key of the Tenant entity.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the SignatureServer.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/SignatureServerConnection"
+            }
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "404": {
+            "description": "The SignatureServer with the given ID not found for the Tenant."
+          }
+        }
+      }
+    },
+    "/signme/ident": {
+      "get": {
+        "operationId": "getIdent",
+        "tags": [
+          "SignMe"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns if there is a valid verification for the user",
+        "responses": {
+          "200": {
+            "description": "True if proper verification is available, false if not",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          "404": {
+            "description": "No SignMe account found"
+          }
+        }
+      },
+      "post": {
+        "operationId": "postIdent",
+        "tags": [
+          "SignMe"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Start a verification process for the user for sign me api",
+        "responses": {
+          "200": {
+            "description": "The redirection url to start the verification process",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/signme/registration": {
+      "get": {
+        "operationId": "getURL",
+        "tags": [
+          "SignMe"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns the URL of the SignMe registration page",
+        "responses": {
+          "200": {
+            "description": "The URL of the SignMe registration page",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/bankid/auth": {
+      "post": {
+        "operationId": "postAuth",
+        "tags": [
+          "BankId"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns a BankID Autostart Token",
+        "parameters": [
+          {
+            "name": "authRequest",
+            "in": "body",
+            "required": true,
+            "description": "Object containing the personal number (optional)",
+            "schema": {
+              "$ref": "#/definitions/BankIdAuthRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/BankIdAuthResponse"
+            }
+          }
+        }
+      }
+    },
+    "/bankid/collect": {
+      "post": {
+        "operationId": "postCollect",
+        "tags": [
+          "BankId"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Requests a status update of the given order",
+        "parameters": [
+          {
+            "name": "collectRequest",
+            "in": "body",
+            "required": true,
+            "description": "Object containing the order reference",
+            "schema": {
+              "$ref": "#/definitions/BankIdCollectRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/BankIdCollectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/bankid/cancel": {
+      "post": {
+        "operationId": "postCancel",
+        "tags": [
+          "BankId"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Cancels an active order",
+        "parameters": [
+          {
+            "name": "cancelRequest",
+            "in": "body",
+            "required": true,
+            "description": "The reference of the order that should be cancelled",
+            "schema": {
+              "$ref": "#/definitions/BankIdCancelRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/i18n/cultures": {
+      "get": {
+        "operationId": "getCultures",
+        "tags": [
+          "I18n"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns all available cultures",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CultureInfo"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i18n/countries": {
+      "get": {
+        "operationId": "getCountries",
+        "tags": [
+          "I18n"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns all available countries",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CountryInfo"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i18n/supported-locales": {
+      "get": {
+        "operationId": "getSupportedLocales",
+        "tags": [
+          "I18n"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns all supported languages",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i18n/{locale}/bundles/{bundleId}": {
+      "get": {
+        "operationId": "getTranslationBundle",
+        "tags": [
+          "I18n"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns a bundle of Translation entities that belong to the same domain",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "path",
+            "description": "The locale to fetch the bundle for",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "bundleId",
+            "in": "path",
+            "description": "The identifier for the bundle",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/i18n/{locale}/default/{keys}": {
+      "get": {
+        "operationId": "getTranslation",
+        "tags": [
+          "I18n"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns translation for given locale and keys",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "path",
+            "description": "The locale to fetch the translation(s) for",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "keys",
+            "in": "path",
+            "description": "The keys to be translated (comma-separated)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "ssv"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i18n/{locale}/mail/{tenantId}": {
+      "get": {
+        "operationId": "getMailTranslations",
+        "tags": [
+          "I18n"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns all localized mail texts",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "path",
+            "description": "The locale in which the texts should be returned",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "The id of the tenant",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Translation"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postMailTranslation",
+        "tags": [
+          "I18n"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates an individual mail text for the given tenant",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "path",
+            "description": "The locale in which the texts should be returned",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "The id of the tenant",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "translation",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Translation"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Translation"
+            }
+          },
+          "409": {
+            "description": "Conflict: Entity exists already"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putMailTranslation",
+        "tags": [
+          "I18n"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates an individual mail text",
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "path",
+            "description": "The locale in which the texts should be returned",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenantId",
+            "in": "path",
+            "description": "The id of the tenant",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "translation",
+            "schema": {
+              "$ref": "#/definitions/Translation"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Translation"
+            }
+          },
+          "409": {
+            "description": "Conflict: Entity does not exist"
+          }
+        }
+      }
+    },
+    "/i18n/{id}": {
+      "delete": {
+        "operationId": "deleteMailTranslation",
+        "tags": [
+          "I18n"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Deletes (resets) an individual mail text",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Translation entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          },
+          "403": {
+            "description": "forbidden"
+          }
+        }
+      }
+    },
+    "/intents/workflows": {
+      "post": {
+        "operationId": "postWorkflowCreateIntent",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates a WorkflowCreateIntent - originatorJob must be null",
+        "parameters": [
+          {
+            "name": "workflowCreateIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowCreateIntent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/WorkflowCreateIntent"
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getWorkflowCreateIntentIds",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of WorkflowCreateIntent Ids",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Fetches a list of WorkflowCreateIntent Ids with creator email matching email",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflows/{ids}": {
+      "get": {
+        "operationId": "getWorkflowCreateIntents",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of WorkflowCreateIntents",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "path",
+            "description": "The id(s) of the WorkflowCreateIntent(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/WorkflowCreateIntent"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflows/{id}/document": {
+      "get": {
+        "operationId": "getWorkflowCreateIntentDocument",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Gets information about the document of the WorkflowCreateIntent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Document"
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflows/{id}/document/content": {
+      "get": {
+        "operationId": "getWorkflowCreateIntentDocumentContent",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the base64 encoded content of the document of the WorkflowCreateIntent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflows/{id}/attachments": {
+      "post": {
+        "operationId": "postAddAttachmentIntent",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates an AddAttachmentIntent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "addAttachmentIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AddAttachmentIntent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AddAttachmentIntent"
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getAddAttachmentIntentIds",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of AddAttachmentIntent Ids",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflows/{id}/attachments/{addAttachmentIntentIds}": {
+      "get": {
+        "operationId": "getAddAttachmentIntents",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of AddAttachmentIntents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "addAttachmentIntentIds",
+            "in": "path",
+            "description": "The id(s) of the AddAttachmentIntent(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AddAttachmentIntent"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflows/{id}/attachments/{addAttachmentIntentId}/document": {
+      "get": {
+        "operationId": "getAddAttachmentIntentDocument",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Gets information about the document of the AddAttachmentIntent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "addAttachmentIntentId",
+            "in": "path",
+            "description": "The id of the AddAttachmentIntent",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Document"
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflows/{id}/attachments/{addAttachmentIntentId}/document/content": {
+      "get": {
+        "operationId": "getAddAttachmentIntentDocumentContent",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the base64 encoded content of the document of the  AddAttachmentIntent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "addAttachmentIntentId",
+            "in": "path",
+            "description": "The id of the AddAttachmentIntent",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflows/{id}/jobs": {
+      "post": {
+        "operationId": "postJobCreateIntent",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates a JobCreateIntent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobCreateIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/JobCreateIntent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/JobCreateIntent"
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getJobCreateIntentIds",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of JobCreateIntent Ids",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflows/{id}/jobs/{jobCreateIntentIds}": {
+      "get": {
+        "operationId": "getJobCreateIntents",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of JobCreateIntents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the WorkflowCreateIntent",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobCreateIntentIds",
+            "in": "path",
+            "description": "The id(s) of the JobCreateIntent(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/JobCreateIntent"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intents/workflowtemplates": {
+      "get": {
+        "operationId": "getWorkflowTemplates",
+        "tags": [
+          "Intent"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of WorkflowTemplateInfo",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/WorkflowTemplateInfo"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "operationId": "getJobIds",
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Job Ids",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Fetches a list of Job Ids of Jobs in a specific status",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "pending",
+              "completed",
+              "rejected"
+            ]
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Fetches a list of Job Ids for a specific user (email)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{ids}": {
+      "get": {
+        "operationId": "getJobs",
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Jobs",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "path",
+            "description": "The id(s) of the Job(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Job"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/intents/attach-document": {
+      "post": {
+        "operationId": "postAttachDocument",
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Attach a document to a SignJob",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "attachDocumentIntent",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AttachDocumentIntent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/AttachDocumentIntent"
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/intents/dismiss": {
+      "post": {
+        "operationId": "postDismiss",
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Dismiss the SignJob",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "dismissIntent",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DismissJobIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/intents/external-tan": {
+      "post": {
+        "operationId": "postExternalTan",
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Post a TAN to the SignJob",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "externalTanIntent",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ExternalTanIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          },
+          "400": {
+            "description": "wrong TAN"
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/intents/request-external-tan": {
+      "post": {
+        "operationId": "postRequestExternalTan",
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Request a fresh TAN for the SignJob",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/intents/reject": {
+      "post": {
+        "operationId": "postReject",
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Rejects a SignJob",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "rejectIntent",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/RejectJobIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/intents/sign": {
+      "post": {
+        "operationId": "postSign",
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Signs a SignJob",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "signJobIntent",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/SignJobIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/intents/tan-verification": {
+      "post": {
+        "operationId": "postVerifyTan",
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Verifies the job is TAN secured and TAN is correct.",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tanVerificationIntent",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/TanVerificationIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/lists/incoming": {
+      "get": {
+        "operationId": "getListOfIncomingWorkflows",
+        "tags": [
+          "List"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dt",
+            "in": "query",
+            "description": "DateTime string with format <YYYYMMddHHiiss>, e.g.: <20190131123000>. When set, the call will only return workflows that have been updated after the given datetime.",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "summary": "Fetches all workflows where the current active job is assigned to the current user",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExtendedWorkflow"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lists/outgoing": {
+      "get": {
+        "operationId": "getListOfOutgoingWorkflows",
+        "tags": [
+          "List"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches all workflows where the user is originator",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "When set, the call will only return workflows with the given status",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "pending",
+              "completed",
+              "rejected",
+              "all"
+            ]
+          },
+          {
+            "name": "dt",
+            "in": "query",
+            "description": "DateTime string with format <YYYYMMddHHiiss>, e.g.: <20190131123000>. When set, the call will only return workflows that have been updated after the given datetime.",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ExtendedWorkflow"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/registration": {
+      "post": {
+        "operationId": "postRegistration",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Creates a new account that can be used to interact with the API and to login into the web portal.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Account information",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegistrationIntent"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "created"
+          },
+          "400": {
+            "description": "Invalid body property"
+          },
+          "409": {
+            "description": "User exists already"
+          }
+        }
+      }
+    },
+    "/settings/default/visual-signature": {
+      "get": {
+        "operationId": "getDefaultVisualSignatureSettings",
+        "tags": [
+          "SystemConfiguration"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns default visual signature settings",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/VisualSignatureConfigDefault"
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putDefaultVisualSignatureSettings",
+        "tags": [
+          "SystemConfiguration"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates default visual signature settings",
+        "parameters": [
+          {
+            "name": "defaultVisualSignatureConfig",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/VisualSignatureConfigDefault"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/VisualSignatureConfigDefault"
+            }
+          }
+        }
+      }
+    },
+    "/signaturesettings": {
+      "get": {
+        "operationId": "getSignatureSettings",
+        "tags": [
+          "SignatureSetting"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of SignatureSetting entities",
+        "parameters": [
+          {
+            "name": "asWorkflowOriginator",
+            "in": "query",
+            "description": "Whether to receive SignatureSettings allowed for WorkflowOriginators (default = false)",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Fetches a list of SignatureSetting entities for a specific user (email)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "includeMobile",
+            "in": "query",
+            "description": "Whether to include signature settings with cellphone TwoFactor-Auth (default = false)",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SignatureSetting"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/statistics": {
+      "get": {
+        "operationId": "getStatistics",
+        "tags": [
+          "Statistics"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns a list of Account statistics for the given Account ID's",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Status values that need to be considered for filter",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "collectionFormat": "ssv"
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "description": "Date where statistics are counted from.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "description": "Date where statistics are counted to.",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AccountStatistics"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/accounts/{id}": {
+      "put": {
+        "operationId": "putTenantUserAccount",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates a Account entity",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Account entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "account",
+            "in": "body",
+            "description": "Primary key of the Account entity",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Account"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Account"
+            }
+          }
+        }
+      }
+    },
+    "/support/ident/keys": {
+      "get": {
+        "operationId": "getIdentKeysByCountryIdAndIdentProcedureId",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns ident procedures available for given country.",
+        "parameters": [
+          {
+            "name": "countryId",
+            "in": "query",
+            "description": "The id of the country.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "identProcedureId",
+            "in": "query",
+            "description": "The id of the ident procedure.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/IdentKey"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/ident/procedures": {
+      "get": {
+        "operationId": "getIdentProceduresByCountryId",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns ident procedures available for given country.",
+        "parameters": [
+          {
+            "name": "countryId",
+            "in": "query",
+            "description": "The id of the country.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/IdentProcedure"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/roles": {
+      "get": {
+        "operationId": "getRoles",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Role values.",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ROLE_INTEROP_API_BUSINESS_SYSTEM",
+                  "ROLE_PORTAL_USER",
+                  "ROLE_WORKFLOW_CREATOR",
+                  "ROLE_TENANT_ADMIN",
+                  "ROLE_TENANT_DOCUMENT_MANAGER",
+                  "ROLE_FULL_CLEARANCE",
+                  "ROLE_NON_CONTRACTED_USER",
+                  "ROLE_SUPPORTER",
+                  "ROLE_TESTER",
+                  "ROLE_DEVELOPER"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/tenants/{id}": {
+      "put": {
+        "operationId": "putTenant",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates a tenant",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tenant",
+            "in": "body",
+            "required": true,
+            "description": "Tenant entity",
+            "schema": {
+              "$ref": "#/definitions/Tenant"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Tenant"
+            }
+          },
+          "409": {
+            "description": "Conflict: Entity exists already"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteTenant",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Delete a tenant",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/support/tenants/{id}/payment-option": {
+      "get": {
+        "operationId": "getPaymentOption",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the Tenant's PaymentOption.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/PaymentOption"
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putPaymentOption",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates the given PaymentOption.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "paymentOption",
+            "in": "body",
+            "required": true,
+            "description": "PaymentOption model",
+            "schema": {
+              "$ref": "#/definitions/PaymentOption"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/PaymentOption"
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g. invalid PaymentKey name)."
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "404": {
+            "description": "The Tenant is not found or does not have a PaymentOption!"
+          }
+        }
+      }
+    },
+    "/support/tenants/{id}/tenant-parameters": {
+      "get": {
+        "operationId": "getTenantParameters",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of TenantParameter entities for the Tenant.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity.",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/TenantParameter"
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postTenantParameters",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates a TenantParameter for the given tenant.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tenantParameters",
+            "in": "body",
+            "required": true,
+            "description": "TenantParameter entity",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TenantParameter"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TenantParameter"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g. invalid parameter key)."
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "409": {
+            "description": "Conflict: Entity exists already!"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putTenantParameters",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates the given TenantParameter entities.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "tenantParameters",
+            "in": "body",
+            "required": true,
+            "description": "array of TenantParameter entities",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TenantParameter"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TenantParameter"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g. invalid parameter key)."
+          },
+          "403": {
+            "description": "forbidden"
+          },
+          "404": {
+            "description": "TenantParameter not found"
+          }
+        }
+      }
+    },
+    "/support/tenants/{id}/trace-logs": {
+      "get": {
+        "operationId": "getTraceLogsFromTenant",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns all trace log entries for a given tenant",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "description": "The name of the logging domain",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TraceLogEntry"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/tenants/{id}/transactions": {
+      "get": {
+        "operationId": "getTransactionsForTenant",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns all transaction statistics for a given tenant",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "description": "Date where statistics are counted from.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "description": "Date where statistics are counted to.",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AccountStatistics"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/users/{id}": {
+      "delete": {
+        "operationId": "deleteUser",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Delete a user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/support/users/{id}/accounts": {
+      "get": {
+        "operationId": "getUserAccounts",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Account entities",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Account"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/users/{id}/ident-profile": {
+      "get": {
+        "operationId": "getIdentProfileOfUser",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a single IdentProfile entity",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/IdentProfile"
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putUserIdentProfile",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates an existing user IdentProfile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "identProfile",
+            "in": "body",
+            "required": true,
+            "description": "IdentProfile entity",
+            "schema": {
+              "$ref": "#/definitions/IdentProfile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/IdentProfile"
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postUserIdentProfile",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates an IdentProfile for the given user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "identProfile",
+            "in": "body",
+            "required": true,
+            "description": "IdentProfile entity",
+            "schema": {
+              "$ref": "#/definitions/IdentProfile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/IdentProfile"
+            }
+          },
+          "409": {
+            "description": "Conflict: Entity exists already"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUserIdentProfile",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Deletes an IdentProfile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          },
+          "403": {
+            "description": "Insufficient Rights"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/support/users/{id}/trace-logs": {
+      "get": {
+        "operationId": "getTraceLogsFromUserAccount",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns all trace log entries for a given User",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "description": "The name of the logging domain",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TraceLogEntry"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/users/report": {
+      "get": {
+        "operationId": "getUsersCsvReport",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns a raw report on the usage by customer",
+        "produces": [
+          "text/csv"
+        ],
+        "responses": {
+          "200": {
+            "description": "The csv formatted report on the usage by customer as a string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/support/workflows": {
+      "get": {
+        "operationId": "getWorkflowIdsForSupport",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of all Workflow Ids",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Fetches a list of Workflow ids with owner email matching email",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Fetches a list of Workflow Ids of Workflows in a specific state",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "created",
+              "waiting_for_input",
+              "waiting_for_external_tan",
+              "suspended",
+              "processing",
+              "cancelled",
+              "rejected",
+              "failed",
+              "finished"
+            ]
+          },
+          {
+            "name": "dateCreatedFrom",
+            "in": "query",
+            "description": "Fetches a list of Workflow ids of Workflows from a specific point in time",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "dateCreatedTo",
+            "in": "query",
+            "description": "Fetches a list of Workflow ids of Workflows to a specific point in time",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "dateModifiedFrom",
+            "in": "query",
+            "description": "Fetches a list of Workflow ids of Workflows from a specific point in time",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "dateModifiedTo",
+            "in": "query",
+            "description": "Fetches a list of Workflow ids of Workflows to a specific point in time",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/workflows/{ids}": {
+      "get": {
+        "operationId": "getWorkflowsForSupport",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Workflows",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "path",
+            "description": "The id(s) of the Workflow(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Workflow"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/workflows/{id}/intents/retry": {
+      "post": {
+        "operationId": "postRetryWorkflowForSupport",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Retries the Workflow.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the Workflow.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "workflowRetryIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowRetryIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          },
+          "403": {
+            "description": "Insufficient Rights"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/support/workflows/{id}/jobs": {
+      "get": {
+        "operationId": "getWorkflowJobIdsForSupport",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Job Ids",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/workflows/{id}/jobs/{jobIds}": {
+      "get": {
+        "operationId": "getWorkflowJobsForSupport",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Jobs",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobIds",
+            "in": "path",
+            "description": "The id(s) of the Job(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Job"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/workflows/states": {
+      "get": {
+        "operationId": "getWorkflowStates",
+        "tags": [
+          "Support"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of all possible Workflow state values",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tans/intents": {
+      "post": {
+        "operationId": "postTanIntent",
+        "tags": [
+          "Tan"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Sends a TAN for the usecase specified by tanIntent",
+        "parameters": [
+          {
+            "name": "tanIntent",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/TanIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/tenants": {
+      "get": {
+        "operationId": "getTenantIds",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Tenant Ids",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "A part of the tenant name",
+            "type": "string"
+          },
+          {
+            "name": "customerNumber",
+            "in": "query",
+            "description": "A part of the tenants customer number",
+            "type": "string"
+          },
+          {
+            "name": "assignableOnly",
+            "in": "query",
+            "description": "If true, only tenants a user can be assigned too, are returned (default is false)",
+            "type": "boolean"
+          },
+          {
+            "name": "tenantUserMail",
+            "in": "query",
+            "description": "A mail address or a mail address part from a tenant user",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tenants/contract-types": {
+      "get": {
+        "operationId": "getContractTypes",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of contract type values",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "standard",
+                  "premium",
+                  "enterprise"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tenants/{ids}": {
+      "get": {
+        "operationId": "getTenants",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Tenant entities",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "path",
+            "description": "The id(s) of the Tenant(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Tenant"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tenants/{id}/accounts": {
+      "get": {
+        "operationId": "getAccountsOfTenant",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Account entities",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Account"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putAccountForTenant",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates existing account information",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "account",
+            "in": "body",
+            "required": true,
+            "description": "Account entity",
+            "schema": {
+              "$ref": "#/definitions/Account"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Account"
+            }
+          }
+        }
+      }
+    },
+    "/tenants/{id}/accounts/{accountId}": {
+      "get": {
+        "operationId": "getAccountByIdOfTenant",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a single Account entity",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "accountId",
+            "in": "path",
+            "description": "Primary key of the Account entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Account"
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteAccountOfTenant",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Deletes an Account",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "accountId",
+            "in": "path",
+            "description": "Primary key of the Account entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          },
+          "403": {
+            "description": "Insufficient Rights"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/tenants/{id}/available-payment-methods": {
+      "get": {
+        "operationId": "getAvailablePaymentMethods",
+        "tags": [
+          "Tenant"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of available payment methods",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the Tenant entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "bill",
+                  "sepa",
+                  "credit_card"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tokens/{tokenhash}": {
+      "get": {
+        "operationId": "checkTokenExists",
+        "tags": [
+          "Token"
+        ],
+        "summary": "Check if token exists",
+        "parameters": [
+          {
+            "name": "tokenhash",
+            "in": "path",
+            "description": "Hash value of the token to be checked",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/trace-logs": {
+      "get": {
+        "operationId": "getTraceLogs",
+        "tags": [
+          "TraceLog"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns all trace log entries for a given tenant",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "description": "The name of the logging domain",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TraceLogEntry"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "getUserIds",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of User ids",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Fetches a list of User ids matching email",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "firstName",
+            "in": "query",
+            "description": "Fetches a list of User ids matching firstName",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "lastName",
+            "in": "query",
+            "description": "Fetches a list of User ids matching lastName",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postUser",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates a new user and account",
+        "parameters": [
+          {
+            "name": "newUser",
+            "in": "body",
+            "description": "User data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUserIntent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      }
+    },
+    "/users/states": {
+      "get": {
+        "operationId": "getUserStates",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of all possible Account state values",
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{ids}": {
+      "get": {
+        "operationId": "getUsers",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a single User entity",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "path",
+            "description": "The id(s) of the User(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/intents/delete": {
+      "post": {
+        "operationId": "postDeleteUserIntent",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Apply for cancellation of user account",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "deleteUserIntent",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeleteUserIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/users/{id}/signmedata": {
+      "get": {
+        "operationId": "getSignMeDataOfUser",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the SignMeData entity of the given user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/SignMeData"
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postSignMeData",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates new SignMeData of user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "signMeData",
+            "in": "body",
+            "required": true,
+            "description": "SignMeData entity",
+            "schema": {
+              "$ref": "#/definitions/SignMeData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/SignMeData"
+            }
+          },
+          "400": {
+            "description": "request contains invalid data"
+          }
+        }
+      },
+      "put": {
+        "operationId": "putSignMeData",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Change existing SignMeData of user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "signMeData",
+            "in": "body",
+            "required": true,
+            "description": "SignMeData entity",
+            "schema": {
+              "$ref": "#/definitions/SignMeData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/SignMeData"
+            }
+          },
+          "400": {
+            "description": "request contains invalid data"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteSignMeData",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Deletes SignMeData of user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          },
+          "403": {
+            "description": "Insufficient Rights"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/users/{id}/profile": {
+      "get": {
+        "operationId": "getProfileOfUser",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a single Profile entity",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/UserProfile"
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putUserProfile",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Updates an existing user profile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "userProfile",
+            "in": "body",
+            "required": true,
+            "description": "UserProfile entity",
+            "schema": {
+              "$ref": "#/definitions/UserProfile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/UserProfile"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/accounts": {
+      "get": {
+        "operationId": "getAccountsOfUser",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Account entities",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Account"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/accounts/{accountId}": {
+      "get": {
+        "operationId": "getAccountByIdOfUser",
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a single Account entity",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Primary key of the User entity",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "accountId",
+            "in": "path",
+            "description": "Primary key of the Account entity",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Account"
+            }
+          }
+        }
+      }
+    },
+    "/users/intents/revoke-invitation": {
+      "post": {
+        "operationId": "postRevokeInvitation",
+        "tags": [
+          "User"
+        ],
+        "summary": "Revokes an invitation for the given user",
+        "parameters": [
+          {
+            "name": "revokeInvitationIntent",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RevokeInvitationIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/validators/in-use/email": {
+      "post": {
+        "operationId": "postValidateMailInUse",
+        "tags": [
+          "Validation"
+        ],
+        "summary": "Checks if a mail address is currently in use",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "validationIntent",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ValidateMailAddressIntent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ValidateMailAddressIntent"
+            }
+          }
+        }
+      }
+    },
+    "/workflows": {
+      "get": {
+        "operationId": "getWorkflowIds",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Workflow Ids",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Fetches a list of Workflow ids with owner email matching email",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Fetches a list of Workflow Ids of Workflows in a specific status",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "pending",
+              "completed",
+              "rejected"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{ids}": {
+      "get": {
+        "operationId": "getWorkflows",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Workflows",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "path",
+            "description": "The id(s) of the Workflow(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Workflow"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/attachments": {
+      "get": {
+        "operationId": "getWorkflowAttachmentIds",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Attachment Ids",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/attachments/{attachmentIds}": {
+      "get": {
+        "operationId": "getWorkflowAttachments",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Attachments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "attachmentIds",
+            "in": "path",
+            "description": "The id(s) of the Attachment(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Document"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/attachments/{attachmentId}/content": {
+      "get": {
+        "operationId": "getWorkflowAttachmentContent",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the base64 encoded content of an Attachment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "description": "The id of the Attachment",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/document": {
+      "get": {
+        "deprecated": true,
+        "operationId": "getDocument",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the original document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Document"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/documents/current": {
+      "get": {
+        "operationId": "getCurrentDocument",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches information about the current document. If workflow state is finished, it fetches information about the document signed by all participants. If workflow_type is single_verify and workflow state is finished, it fetches information about the report document.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Document"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/documents/current/content": {
+      "get": {
+        "operationId": "getCurrentDocumentContent",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the base64 encoded content of the current document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/documents/root": {
+      "get": {
+        "operationId": "getRootDocument",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches information about the original document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Document"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/documents/root/content": {
+      "get": {
+        "operationId": "getRootDocumentContent",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the base64 encoded content of the original document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/intents": {
+      "post": {
+        "operationId": "postCreateWorkflow",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Creates a Workflow",
+        "parameters": [
+          {
+            "name": "workflowCreateIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowCreateIntent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/WorkflowCreateIntent"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/intents/cancel": {
+      "post": {
+        "operationId": "postCancelWorkflow",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Cancels the Workflow.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the Workflow.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "workflowCancelIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CancelWorkflowIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/workflows/{workflowId}/intents/continue": {
+      "post": {
+        "operationId": "postContinueWorkflow",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Continue a paused workflow. A paused workflow cannot proceed with signatures, but is required to edit signature settings",
+        "parameters": [
+          {
+            "name": "workflowId",
+            "in": "path",
+            "description": "The ID of the Workflow.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "workflowContinueIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowContinueIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/workflows/{id}/intents/dismiss": {
+      "post": {
+        "operationId": "postDismissWorkflow",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Dismiss the Workflow.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the Workflow.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "workflowDismissIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DismissWorkflowIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/workflows/{workflowId}/intents/pause": {
+      "post": {
+        "operationId": "postPauseWorkflow",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Pause / Suspend the workflow. A paused workflow cannot proceed with signatures, but is required to edit signature settings",
+        "parameters": [
+          {
+            "name": "workflowId",
+            "in": "path",
+            "description": "The ID of the Workflow.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "workflowPauseIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowPauseIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/workflows/{id}/intents/remind": {
+      "post": {
+        "operationId": "postRemindWorkflow",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Send a reminder to the next signer.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the Workflow.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "workflowRemindIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowRemindIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/workflows/{id}/intents/retry": {
+      "post": {
+        "operationId": "postRetryWorkflow",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Retries the Workflow.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the Workflow.",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "workflowRetryIntent",
+            "in": "body",
+            "description": "Intent data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WorkflowRetryIntent"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "success"
+          }
+        }
+      }
+    },
+    "/workflows/{id}/jobs": {
+      "get": {
+        "operationId": "getWorkflowJobIds",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Job Ids",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/jobs/{jobIds}": {
+      "get": {
+        "operationId": "getWorkflowJobs",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches a list of Jobs",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobIds",
+            "in": "path",
+            "description": "The id(s) of the Job(s)",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Job"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/jobs/{jobId}/document": {
+      "get": {
+        "operationId": "getJobDocument",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches information about the job document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Document"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/jobs/{jobId}/document/content": {
+      "get": {
+        "operationId": "getJobDocumentContent",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the base64 encoded job document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/jobs/{jobId}/report": {
+      "get": {
+        "operationId": "getJobReportDocument",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches information about the job report document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Document"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/jobs/{jobId}/report/content": {
+      "get": {
+        "operationId": "getJobReportDocumentContent",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Fetches the base64 encoded job report document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Workflow",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "The id of the Job",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "fileFormat",
+            "in": "query",
+            "description": "File format of the report document (xml is default ).",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "xml",
+              "pdf"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/logs/verification": {
+      "get": {
+        "operationId": "getWorkflowVerificationLog",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns the verification log (as PDF) for the given workflow",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Workflow ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Document"
+            }
+          }
+        }
+      }
+    },
+    "/workflows/{id}/logs/audit": {
+      "get": {
+        "operationId": "getWorkflowAuditLog",
+        "tags": [
+          "Workflow"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Returns the audit log (as PDF) for the given workflow",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Workflow ID",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/Document"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Account": {
+      "type": "object",
+      "description": "Represents a TenantUserAccount entity",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "email": {
+          "type": "string"
+        },
+        "ccid": {
+          "type": "string"
+        },
+        "isLocked": {
+          "type": "boolean"
+        },
+        "tenant": {
+          "$ref": "#/definitions/Tenant"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ROLE_INTEROP_API_BUSINESS_SYSTEM",
+              "ROLE_PORTAL_USER",
+              "ROLE_WORKFLOW_CREATOR",
+              "ROLE_TENANT_ADMIN",
+              "ROLE_TENANT_DOCUMENT_MANAGER",
+              "ROLE_FULL_CLEARANCE",
+              "ROLE_NON_CONTRACTED_USER",
+              "ROLE_SUPPORTER",
+              "ROLE_TESTER",
+              "ROLE_DEVELOPER",
+              "ROLE_BILLING",
+              "ROLE_DISTRIBUTOR_SUPPORTER",
+              "ROLE_RESELLER_SUPPORTER"
+            ]
+          }
+        }
+      }
+    },
+    "AccountInfo": {
+      "type": "object",
+      "description": "Represents a TenantUserAccount entity",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "email": {
+          "type": "string"
+        },
+        "ccid": {
+          "type": "string"
+        },
+        "tenant": {
+          "$ref": "#/definitions/TenantInfo"
+        },
+        "user": {
+          "$ref": "#/definitions/UserInfo"
+        }
+      }
+    },
+    "AccountStatistics": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/Account"
+        },
+        "workflowCreatedCount": {
+          "type": "integer"
+        },
+        "workflowAnsweredCount": {
+          "type": "integer"
+        },
+        "dssSignCount": {
+          "type": "integer"
+        },
+        "dssVerifyCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "AddAttachmentIntent": {
+      "type": "object",
+      "required": [
+        "content",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Id of the intent entity"
+        },
+        "comment": {
+          "type": "string",
+          "description": "User specific comment"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the document (Optional)"
+        },
+        "content": {
+          "type": "string",
+          "description": "Base64 encoded document content"
+        }
+      }
+    },
+    "AttachDocumentIntent": {
+      "type": "object",
+      "description": "A Intent to attach a document to a SignJob",
+      "required": [
+        "attachDocument"
+      ],
+      "properties": {
+        "attachDocument": {
+          "$ref": "#/definitions/Document"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "tan": {
+          "type": "string",
+          "description": "Used for 2 factor authentication"
+        }
+      }
+    },
+    "BankIdAuthRequest": {
+      "type": "object",
+      "description": "Request for an auth process",
+      "properties": {
+        "personalNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "BankIdAuthResponse": {
+      "type": "object",
+      "description": "Response to a autostart token request",
+      "required": [
+        "orderRef"
+      ],
+      "properties": {
+        "autostartToken": {
+          "type": "string"
+        },
+        "orderRef": {
+          "type": "string"
+        }
+      }
+    },
+    "BankIdCollectRequest": {
+      "type": "object",
+      "description": "Request object for status polling",
+      "required": [
+        "orderRef"
+      ],
+      "properties": {
+        "orderRef": {
+          "type": "string"
+        },
+        "jobId": {
+          "type": "integer"
+        },
+        "isAutostarted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "BankIdCollectResponse": {
+      "type": "object",
+      "description": "Contains an autostart token and a reference to the bank id order process",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "orderRef": {
+          "type": "string"
+        },
+        "hintCode": {
+          "type": "string"
+        },
+        "completionData": {
+          "type": "string"
+        },
+        "i18nMessage": {
+          "type": "string"
+        }
+      }
+    },
+    "BankIdCancelRequest": {
+      "type": "object",
+      "description": "Contains the reference of the order that should be cancelled",
+      "required": [
+        "orderRef"
+      ],
+      "properties": {
+        "orderRef": {
+          "type": "string"
+        }
+      }
+    },
+    "BearerToken": {
+      "type": "object",
+      "properties": {
+        "expirationDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "value": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        }
+      }
+    },
+    "CancelWorkflowIntent": {
+      "type": "object",
+      "description": "An Intent to cancel a Workflow"
+    },
+    "Coordinates": {
+      "type": "object",
+      "required": [
+        "offsetX",
+        "offsetY",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "offsetX": {
+          "type": "integer"
+        },
+        "offsetY": {
+          "type": "integer"
+        },
+        "width": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "integer"
+        }
+      }
+    },
+    "CountryInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "alpha2CountryCode": {
+          "type": "string"
+        },
+        "alpha3CountryCode": {
+          "type": "string"
+        },
+        "countryName": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateUserIntent": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "firstname": {
+          "type": "string"
+        },
+        "lastname": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "integer"
+        },
+        "cellphoneNumber": {
+          "type": "string"
+        },
+        "locale": {
+          "type": "string"
+        }
+      }
+    },
+    "CultureInfo": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "alpha2CountryCode": {
+          "type": "string"
+        },
+        "alpha3CountryCode": {
+          "type": "string"
+        },
+        "alpha2LanguageCode": {
+          "type": "string"
+        },
+        "alpha3LanguageCode": {
+          "type": "string"
+        },
+        "cultureCode": {
+          "type": "string"
+        }
+      }
+    },
+    "DeleteUserIntent": {
+      "type": "object",
+      "description": "An Intent to apply for user account cancellation"
+    },
+    "DismissJobIntent": {
+      "type": "object",
+      "description": "An Intent to dismiss a Job"
+    },
+    "DismissWorkflowIntent": {
+      "type": "object",
+      "description": "An Intent to dismiss a Workflow"
+    },
+    "Document": {
+      "type": "object",
+      "description": "A Document object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the document (Optional)"
+        },
+        "content": {
+          "type": "string",
+          "description": "Base64 encoded document content"
+        },
+        "documentType": {
+          "type": "string",
+          "enum": [
+            "original",
+            "signed",
+            "test_protocol",
+            "counter_signed",
+            "verification_report",
+            "visual_signature_img",
+            "pdf_meta_document",
+            "template",
+            "workflow_attachment"
+          ],
+          "description": "Type of the document set by FP Sign"
+        },
+        "hashValue": {
+          "type": "string",
+          "description": "sha256 hash value of this document, calculated by FP Sign"
+        }
+      }
+    },
+    "ExtendedWorkflow": {
+      "type": "object",
+      "description": "Object describing a workflow and its jobs",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Id of the workflow entity"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the workflow ordocument"
+        },
+        "comment": {
+          "type": "string",
+          "description": "Workflow comment"
+        },
+        "dateCreated": {
+          "type": "string",
+          "description": "Date of creation"
+        },
+        "dateModified": {
+          "type": "string",
+          "description": "Date of last modification"
+        },
+        "workflowProcessingState": {
+          "type": "string",
+          "description": "Status of the job or workflow",
+          "enum": [
+            "created",
+            "waiting_for_input",
+            "waiting_for_external_tan",
+            "suspended",
+            "processing",
+            "cancelled",
+            "rejected",
+            "failed",
+            "finished",
+            "dismissed",
+            "paused"
+          ]
+        },
+        "workflowType": {
+          "type": "string",
+          "description": "Type of the workflow",
+          "enum": [
+            "signature_workflow",
+            "single_sign",
+            "single_verify"
+          ]
+        },
+        "workflowDirection": {
+          "type": "string",
+          "description": "Describes whether this is an outgoing or incoming task",
+          "enum": [
+            "incoming",
+            "outgoing"
+          ]
+        },
+        "owner": {
+          "$ref": "#/definitions/AccountInfo"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExtendedWorkflowTask"
+          }
+        }
+      }
+    },
+    "ExtendedWorkflowTask": {
+      "type": "object",
+      "description": "A Workflow Job object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Id of the Job entity"
+        },
+        "dateCreated": {
+          "type": "string",
+          "description": "Creation date of the job"
+        },
+        "dateSigned": {
+          "type": "string",
+          "description": "Sign date of the job"
+        },
+        "dateRejected": {
+          "type": "string",
+          "description": "Reject date of the job"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Sign or reject reason"
+        },
+        "documentName": {
+          "type": "string",
+          "description": "Name of the document"
+        },
+        "privateMessage": {
+          "type": "string",
+          "description": "The workflow creator's message for the signer"
+        },
+        "signerIp": {
+          "type": "string",
+          "description": "The signer's IP address (if available)"
+        },
+        "visualSignaturePresets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VisualSignaturePreset"
+          }
+        },
+        "owner": {
+          "$ref": "#/definitions/AccountInfo"
+        },
+        "signatureSetting": {
+          "$ref": "#/definitions/SignatureSetting"
+        },
+        "jobProcessingState": {
+          "type": "string",
+          "description": "Status of the job or workflow",
+          "enum": [
+            "created",
+            "waiting_for_input",
+            "waiting_for_external_tan",
+            "suspended",
+            "processing",
+            "cancelled",
+            "rejected",
+            "failed",
+            "finished",
+            "dismissed",
+            "paused"
+          ]
+        }
+      }
+    },
+    "ExternalTanIntent": {
+      "type": "object",
+      "description": "An intent to submit a TAN for an n external signature.",
+      "required": [
+        "tan"
+      ],
+      "properties": {
+        "tan": {
+          "type": "string"
+        }
+      }
+    },
+    "IdentKey": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "key": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "regex": {
+          "type": "string"
+        },
+        "regexSample": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "IdentProcedure": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "state": {
+          "type": "boolean"
+        },
+        "paymentInfoNeeded": {
+          "type": "boolean"
+        }
+      }
+    },
+    "IdentProfile": {
+      "type": "object",
+      "required": [
+        "birthdate"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "identProcedureId": {
+          "type": "integer"
+        },
+        "isIdentified": {
+          "type": "boolean"
+        },
+        "identProfileItems": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IdentProfileItem"
+          }
+        }
+      }
+    },
+    "IdentProfileItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "identKeyId": {
+          "type": "integer"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "Job": {
+      "type": "object",
+      "description": "A Workflow Job object",
+      "required": [
+        "id",
+        "workflowId",
+        "owner",
+        "signatureSetting"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Id of the Job entity"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the job.",
+          "enum": [
+            "created",
+            "waiting_for_input",
+            "waiting_for_external_tan",
+            "suspended",
+            "processing",
+            "cancelled",
+            "rejected",
+            "failed",
+            "finished",
+            "dismissed"
+          ]
+        },
+        "dateCreated": {
+          "type": "string",
+          "description": "Creation date of the job."
+        },
+        "dateSigned": {
+          "type": "string",
+          "description": "Sign date of the job."
+        },
+        "dateRejected": {
+          "type": "string",
+          "description": "Reject date of the job."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Sign or reject reason."
+        },
+        "workflowId": {
+          "type": "integer",
+          "description": "Id of the Workflow entity"
+        },
+        "owner": {
+          "$ref": "#/definitions/AccountInfo"
+        },
+        "originator": {
+          "$ref": "#/definitions/AccountInfo"
+        },
+        "signatureSetting": {
+          "$ref": "#/definitions/SignatureSetting"
+        },
+        "signerIp": {
+          "type": "string",
+          "description": "The signer's IP address (if available)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the workflow/document."
+        },
+        "privateMessage": {
+          "type": "string",
+          "description": "The workflow creator's message for the signer."
+        },
+        "signaturePresets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VisualSignaturePreset"
+          }
+        }
+      }
+    },
+    "JobCreateIntent": {
+      "type": "object",
+      "description": "A Job creation intent object",
+      "required": [
+        "participant",
+        "signatureSetting"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Id of the intent entity"
+        },
+        "comment": {
+          "type": "string",
+          "description": "User specific comment for this intent"
+        },
+        "participant": {
+          "$ref": "#/definitions/WorkflowParticipant"
+        },
+        "signatureSetting": {
+          "type": "integer",
+          "description": "Id of the SignatureSetting used."
+        },
+        "message": {
+          "type": "string",
+          "description": "Message to participant"
+        },
+        "signaturePresets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VisualSignaturePreset"
+          }
+        }
+      }
+    },
+    "LoginIntent": {
+      "type": "object",
+      "description": "Date required for login",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Username for the UserAccount"
+        },
+        "password": {
+          "type": "string",
+          "description": "Base64 encoded password"
+        }
+      }
+    },
+    "OriginatorJob": {
+      "type": "object",
+      "description": "Originator settings",
+      "required": [
+        "originator",
+        "signatureSetting"
+      ],
+      "properties": {
+        "originator": {
+          "$ref": "#/definitions/WorkflowParticipant"
+        },
+        "signatureSetting": {
+          "type": "integer",
+          "description": "Id of the SignatureSetting used."
+        },
+        "visualSignature": {
+          "$ref": "#/definitions/VisualSignature"
+        }
+      }
+    },
+    "PaymentOption": {
+      "type": "object",
+      "description": "PaymentOption object",
+      "required": [
+        "paymentMethod"
+      ],
+      "properties": {
+        "paymentMethod": {
+          "type": "string",
+          "enum": [
+            "none",
+            "bill",
+            "sepa",
+            "credit_card"
+          ]
+        },
+        "paymentValueSetBill": {
+          "$ref": "#/definitions/PaymentValueSetBill"
+        },
+        "paymentValueSetSepa": {
+          "$ref": "#/definitions/PaymentValueSetSepa"
+        },
+        "paymentValueSetCreditCard": {
+          "$ref": "#/definitions/PaymentValueSetCreditCard"
+        }
+      }
+    },
+    "PaymentValueSetBill": {
+      "type": "object",
+      "description": "Data set for PaymentValues of a BILL PaymentOption.",
+      "required": [
+        "addressee",
+        "address",
+        "addressSupplement",
+        "postalCode",
+        "city",
+        "country"
+      ],
+      "properties": {
+        "addressee": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "addressSupplement": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "PaymentValueSetSepa": {
+      "type": "object",
+      "description": "Data set for PaymentValues of a SEPA PaymentOption.",
+      "required": [
+        "accountHolder",
+        "bankName",
+        "iban",
+        "bic"
+      ],
+      "properties": {
+        "accountHolder": {
+          "type": "string"
+        },
+        "bankName": {
+          "type": "string"
+        },
+        "iban": {
+          "type": "string"
+        },
+        "bic": {
+          "type": "string"
+        },
+        "sepaClientNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "PaymentValueSetCreditCard": {
+      "type": "object",
+      "description": "Data set for PaymentValues of a Credit Card PaymentOption.",
+      "required": [
+        "cardNumber",
+        "ownerName",
+        "expirationDate",
+        "cardSecurityCode"
+      ],
+      "properties": {
+        "cardNumber": {
+          "type": "string"
+        },
+        "ownerName": {
+          "type": "string"
+        },
+        "expirationDate": {
+          "type": "string"
+        },
+        "cardSecurityCode": {
+          "type": "string"
+        }
+      }
+    },
+    "RegistrationIntent": {
+      "type": "object",
+      "description": "Date required to create a new user account",
+      "required": [
+        "email",
+        "first_name",
+        "last_name",
+        "password",
+        "language",
+        "country"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Mail address, that will be linked to the user account"
+        },
+        "first_name": {
+          "type": "string",
+          "description": "User's first name"
+        },
+        "last_name": {
+          "type": "string",
+          "description": "User's last name"
+        },
+        "password": {
+          "type": "string",
+          "description": "User's password"
+        },
+        "language": {
+          "type": "string",
+          "description": "ISO 639-1 language code (2 digits)"
+        },
+        "country": {
+          "type": "string",
+          "description": "ISO 3166-2 country code (2 digits)"
+        },
+        "corporate_name": {
+          "type": "string",
+          "description": "Name of the corporation"
+        },
+        "zip_code": {
+          "type": "string",
+          "description": "National zip code of the corporation"
+        },
+        "cellphone": {
+          "type": "string",
+          "description": "Corporate contact phone number"
+        },
+        "tax_number": {
+          "type": "string",
+          "description": "Official tax number of the corporation"
+        },
+        "fp_customer_number": {
+          "type": "string",
+          "description": "The FP customer number"
+        }
+      }
+    },
+    "RejectJobIntent": {
+      "type": "object",
+      "description": "An Intent to reject a SignJob",
+      "properties": {
+        "reason": {
+          "type": "string"
+        },
+        "tan": {
+          "type": "string",
+          "description": "Used for 2 factor authentication"
+        }
+      }
+    },
+    "RevokeInvitationIntent": {
+      "type": "object",
+      "description": "An Intent to revoke an FP Sign invitation",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The users email that matches with the token supplied"
+        },
+        "token": {
+          "type": "string",
+          "description": "The revoke invitation token that matches with the email supplied"
+        }
+      }
+    },
+    "SignatureServer": {
+      "type": "object",
+      "description": "SignatureServer",
+      "required": [
+        "isActive",
+        "wsdl",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "wsdl": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "auto_verifier",
+            "qualified_auto_signer",
+            "advanced_auto_signer",
+            "fop",
+            "acro_form_extractor",
+            "remote_qualified_auto_signer",
+            "advanced_e_seal_auto_signer",
+            "qualified_e_seal_auto_signer"
+          ]
+        }
+      }
+    },
+    "SignatureServerConnection": {
+      "type": "object",
+      "description": "SignatureServerConnection",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "unavailable"
+          ]
+        }
+      }
+    },
+    "SignatureSetting": {
+      "type": "object",
+      "description": "Object containing information about a signature setting",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Id of the SignatureSetting entity"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "authentication": {
+          "type": "string",
+          "description": "Type of two factor authentication algorithm"
+        },
+        "exchangeType": {
+          "type": "string",
+          "description": "Type of document exchange mechanism"
+        },
+        "fillOutPdf": {
+          "type": "boolean",
+          "description": "Whether to fill out a PDF or not"
+        },
+        "signatureType": {
+          "type": "string",
+          "description": "Type of signature"
+        }
+      }
+    },
+    "SignJobIntent": {
+      "type": "object",
+      "description": "An Intent to sign a SignJob",
+      "properties": {
+        "comment": {
+          "type": "string"
+        },
+        "tan": {
+          "type": "string",
+          "description": "Used for 2 factor authentication"
+        },
+        "visualSignature": {
+          "$ref": "#/definitions/VisualSignature"
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AddAttachmentIntent"
+          }
+        }
+      }
+    },
+    "SignMeData": {
+      "type": "object",
+      "description": "Profile data of a user for the SignMe service",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The email addresses associated to the SignMe account"
+        },
+        "emailConfirmed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "TanIntent": {
+      "type": "object",
+      "description": "An Intent to receive a TAN",
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "job"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "description": "Id of the entity specified by type"
+        }
+      }
+    },
+    "TanVerificationIntent": {
+      "type": "object",
+      "description": "An Intent to verify a TAN",
+      "required": [
+        "tan"
+      ],
+      "properties": {
+        "tan": {
+          "type": "string"
+        }
+      }
+    },
+    "Tenant": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "isPrivate": {
+          "type": "boolean"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "undefined",
+            "not_registered",
+            "test",
+            "contract"
+          ]
+        },
+        "contractType": {
+          "type": "string",
+          "enum": [
+            "none",
+            "standard",
+            "premium",
+            "enterprise"
+          ]
+        },
+        "customerNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantInfo": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantParameter": {
+      "type": "object",
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "TraceLogEntry": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "dateCreated": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "initiator": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        }
+      }
+    },
+    "Translation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "locale": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "translatorInfo": {
+          "type": "string"
+        },
+        "tenant": {
+          "$ref": "#/definitions/Tenant"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "deletion_requested",
+            "data_anonymized",
+            "active_no_login"
+          ]
+        },
+        "dateCreated": {
+          "type": "string"
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Account"
+          }
+        },
+        "profile": {
+          "$ref": "#/definitions/UserProfile"
+        }
+      }
+    },
+    "UserInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "profile": {
+          "$ref": "#/definitions/UserProfileInfo"
+        }
+      }
+    },
+    "UserProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "gender": {
+          "type": "integer"
+        },
+        "firstname": {
+          "type": "string"
+        },
+        "lastname": {
+          "type": "string"
+        },
+        "cellphone": {
+          "type": "string"
+        },
+        "deMail": {
+          "type": "string"
+        },
+        "fax": {
+          "type": "string"
+        },
+        "culture": {
+          "type": "string"
+        },
+        "birthdate": {
+          "type": "string"
+        },
+        "agreedTos": {
+          "type": "boolean"
+        },
+        "agreedPrivacy": {
+          "type": "boolean"
+        },
+        "agreedProcuration": {
+          "type": "boolean"
+        },
+        "agreedDirectDebit": {
+          "type": "boolean"
+        },
+        "extendedNotification": {
+          "type": "boolean"
+        }
+      }
+    },
+    "UserProfileInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "gender": {
+          "type": "integer"
+        },
+        "firstname": {
+          "type": "string"
+        },
+        "lastname": {
+          "type": "string"
+        }
+      }
+    },
+    "ValidateMailAddressIntent": {
+      "type": "object",
+      "description": "Object containing the mail address and the validation result",
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "isInUse": {
+          "type": "boolean"
+        }
+      }
+    },
+    "VisualSignature": {
+      "type": "object",
+      "required": [
+        "logoContent",
+        "coordinates"
+      ],
+      "properties": {
+        "logoContent": {
+          "type": "string",
+          "description": "Base64 encoded logo content"
+        },
+        "includeMetaInfo": {
+          "type": "boolean"
+        },
+        "setAsDefaultSignature": {
+          "type": "boolean",
+          "description": "Determines whether the signature should be used as default signature for the TenantUserAccount (default = false)"
+        },
+        "pageNbr": {
+          "type": "integer",
+          "description": "The number of the page the visual signature shall be added to."
+        },
+        "coordinates": {
+          "$ref": "#/definitions/Coordinates"
+        }
+      }
+    },
+    "VisualSignatureConfigDefault": {
+      "type": "object",
+      "properties": {
+        "logoContentAes": {
+          "type": "string"
+        },
+        "logoContentQes": {
+          "type": "string"
+        },
+        "width": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "offsetX": {
+          "type": "integer"
+        },
+        "offsetY": {
+          "type": "integer"
+        },
+        "gap": {
+          "type": "integer"
+        }
+      }
+    },
+    "VisualSignatureField": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string",
+          "enum": [
+            "certDN",
+            "certSerial",
+            "certIssuer",
+            "certOrg",
+            "certOU",
+            "certEMail",
+            "certFingerPrint",
+            "sigDate",
+            "sigReason",
+            "sigLocation"
+          ]
+        },
+        "coordinates": {
+          "$ref": "#/definitions/Coordinates"
+        }
+      }
+    },
+    "VisualSignaturePreset": {
+      "type": "object",
+      "required": [
+        "pageNumber",
+        "offsetX",
+        "offsetY",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "pageNumber": {
+          "type": "integer"
+        },
+        "offsetX": {
+          "type": "integer"
+        },
+        "offsetY": {
+          "type": "integer"
+        },
+        "width": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "integer"
+        }
+      }
+    },
+    "Workflow": {
+      "type": "object",
+      "description": "A Workflow object",
+      "required": [
+        "id",
+        "owner",
+        "state"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Id of the Workflow entity"
+        },
+        "owner": {
+          "$ref": "#/definitions/AccountInfo"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "created",
+            "waiting_for_input",
+            "waiting_for_external_tan",
+            "suspended",
+            "paused",
+            "processing",
+            "cancelled",
+            "rejected",
+            "failed",
+            "finished",
+            "dismissed"
+          ]
+        },
+        "workflowType": {
+          "type": "string",
+          "enum": [
+            "signature_workflow",
+            "single_sign",
+            "single_verify"
+          ]
+        },
+        "comment": {
+          "type": "string"
+        },
+        "dateCreated": {
+          "type": "string"
+        },
+        "dateModified": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the workflow/document."
+        }
+      }
+    },
+    "WorkflowCreateIntent": {
+      "type": "object",
+      "description": "A Workflow creation intent object",
+      "required": [
+        "workflowType"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Id of the intent entity"
+        },
+        "intentComment": {
+          "type": "string",
+          "description": "User specific comment for this intent"
+        },
+        "workflowComment": {
+          "type": "string",
+          "description": "Message to all workflow participants (used only with workflows of type signature_workflow)"
+        },
+        "shared": {
+          "type": "boolean",
+          "description": "Whether this intent is shared for all users of this tenant or not"
+        },
+        "originatorJob": {
+          "$ref": "#/definitions/OriginatorJob"
+        },
+        "workflowType": {
+          "type": "string",
+          "enum": [
+            "signature_workflow",
+            "single_sign",
+            "single_verify"
+          ]
+        },
+        "delegable": {
+          "type": "boolean",
+          "description": "Determines whether the jobs of the created workflow can be delegated (default is false)"
+        },
+        "notification": {
+          "type": "string",
+          "enum": [
+            "just_me",
+            "all_participants"
+          ],
+          "description": "Determines who is going to be notified if workflow has finished or canceled (default is all_participants)"
+        },
+        "document": {
+          "$ref": "#/definitions/Document"
+        },
+        "reference": {
+          "type": "integer",
+          "description": "Id of the created object (Workflow, ...)"
+        }
+      }
+    },
+    "WorkflowContinueIntent": {
+      "type": "object",
+      "description": "An Intent to continue a paused Workflow"
+    },
+    "WorkflowPauseIntent": {
+      "type": "object",
+      "description": "An Intent to pause a Workflow"
+    },
+    "WorkflowRemindIntent": {
+      "type": "object",
+      "description": "A Workflow reminder intent object"
+    },
+    "WorkflowRetryIntent": {
+      "type": "object",
+      "description": "A Workflow retry intent object"
+    },
+    "WorkflowParticipant": {
+      "type": "object",
+      "description": "Participant of a Workflow",
+      "required": [
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email of the participant"
+        },
+        "identifier": {
+          "type": "string",
+          "description": "Client-specific customer number"
+        },
+        "firstname": {
+          "type": "string",
+          "description": "First name of the participant"
+        },
+        "lastname": {
+          "type": "string",
+          "description": "Last name of the participant"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "Mobile number of the participant"
+        }
+      }
+    },
+    "WorkflowTemplateInfo": {
+      "type": "object",
+      "description": "A Workflow Template object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Id of the intent entity"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
