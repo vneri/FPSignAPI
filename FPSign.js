@@ -16,11 +16,11 @@ FPSign.login = function(username, password){
 	});
 }
 
-FPSign.register = function(username, password, firstName, lastName, language, country, resellerId, campaignName, leadSource){
+FPSign.register = function(email, password, firstName, lastName, language, country, resellerId, campaignName, leadSource){
 	return new Promise(function(resolve, reject){
 		var payload = 
 			{
-				"username": username,
+				"email": email,
 				"password": password,
 				"first_name": firstName,
 				"last_name": lastName,
