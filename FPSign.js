@@ -12,7 +12,7 @@ FPSign.login = function(username, password){
 			}
 		Xhr.POST(FPSign.baseURL + '/login', function(data){
 			resolve(data);
-		},payload, 'application/json');
+		},payload, undefined, 'application/json');
 	});
 }
 
@@ -32,7 +32,7 @@ FPSign.register = function(username, password, firstName, lastName, language, co
 			}
 		Xhr.POST(FPSign.baseURL + '/registration', function(data){
 			resolve(data);
-		},payload, 'application/json');
+		},payload, undefined, 'application/json');
 	});
 }
 
