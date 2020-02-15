@@ -15,6 +15,16 @@ FPSign.login = function(username, password){
         },payload, undefined, 'application/json');
 	});
 }
+FPSign.refresh = function(){
+	return new Promise(function(resolve, reject){
+        FPSign.Xhr.GET(FPSign.baseURL + '/auth/refresh', function(data){
+          if (data.status < 300)
+          	resolve(data.body);
+          else
+            reject(data.body);
+        }, undefined, undefined);
+	});
+}
 
 FPSign.register = function(email, password, firstName, lastName, language, country, resellerId, campaignName, leadSource){
 	return new Promise(function(resolve, reject){
